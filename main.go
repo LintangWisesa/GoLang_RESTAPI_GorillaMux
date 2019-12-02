@@ -1,5 +1,6 @@
 package main
 
+// go get -u github.com/gorilla/mux
 import (
 	"encoding/json"
 	"log"
