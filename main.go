@@ -28,12 +28,21 @@ type author struct {
 // data
 var books []book
 
+// ==================================
+// Home Page
+func home(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	http.ServeFile(w, r, "./index.html")
+}
+
+// ==================================
 // Get all books
 func getBooks(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(books)
 }
 
+// ==================================
 // Get a book
 func getBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -49,6 +58,7 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&book{})
 }
 
+// ==================================
 // create book POST
 func createBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -59,13 +69,18 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(book)
 }
 
+// ==================================
+
 func updateBook(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// ==================================
+
 func deleteBook(w http.ResponseWriter, r *http.Request) {
 
 }
+
 func main() {
 	// init router
 	r := mux.NewRouter()
@@ -78,6 +93,7 @@ func main() {
 	books = append(books, book{ID: "5", Isbn: "123460", Title: "Buku Lima", Author: &author{Firstname: "Fafa", Lastname: "Susilo"}})
 
 	// route handler / endpoints
+	r.HandleFunc("/", home).Methods("GET")
 	r.HandleFunc("/api/books", getBooks).Methods("GET")
 	r.HandleFunc("/api/books/{id}", getBook).Methods("GET")
 	r.HandleFunc("/api/books", createBook).Methods("POST")
