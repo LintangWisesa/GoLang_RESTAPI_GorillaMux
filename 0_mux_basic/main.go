@@ -3,6 +3,7 @@ package main
 // go get -u github.com/gorilla/mux
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -33,7 +34,7 @@ var books []book
 // Home Page
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	http.ServeFile(w, r, "./index.html")
+	http.ServeFile(w, r, "./../index.html")
 }
 
 // ==================================
@@ -150,5 +151,6 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
+	fmt.Println("Connected to port 1234")
 	log.Fatal(srv.ListenAndServe())
 }
