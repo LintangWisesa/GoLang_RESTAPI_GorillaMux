@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -60,6 +61,15 @@ func getBook(w http.ResponseWriter, r *http.Request) {
 
 // ==================================
 // create book POST
+// {
+// 	"isbn": "99999",
+// 	"title": "Buku Baru",
+// 	"author": {
+// 		"firstname": "Lintang",
+// 		"lastname": "Wisesa"
+// 	}
+// }
+
 func createBook(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var book book
@@ -70,20 +80,49 @@ func createBook(w http.ResponseWriter, r *http.Request) {
 }
 
 // ==================================
-
+// update book PUT
+// {
+// 	"isbn": "99999",
+// 	"title": "Buku Baru",
+// 	"author": {
+// 		"firstname": "Lintang",
+// 		"lastname": "Wisesa"
+// 	}
+// }
 func updateBook(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	for index, item := range books {
+		if item.ID == params["id"] {
+			books = append(books[:index], books[index+1:]...)
+			var book book
+			_ = json.NewDecoder(r.Body).Decode(&book)
+			book.ID = params["id"]
+			books = append(books, book)
+			json.NewEncoder(w).Encode(book)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(books)
 }
 
 // ==================================
-
+// delete book DELETE
 func deleteBook(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	params := mux.Vars(r)
+	for index, item := range books {
+		if item.ID == params["id"] {
+			books = append(books[:index], books[index+1:]...)
+			break
+		}
+	}
+	json.NewEncoder(w).Encode(books)
 }
 
 func main() {
 	// init router
-	r := mux.NewRouter()
+	router := mux.NewRouter()
 
 	// data
 	books = append(books, book{ID: "1", Isbn: "123456", Title: "Buku Satu", Author: &author{Firstname: "Andi", Lastname: "Susilo"}})
@@ -93,13 +132,23 @@ func main() {
 	books = append(books, book{ID: "5", Isbn: "123460", Title: "Buku Lima", Author: &author{Firstname: "Fafa", Lastname: "Susilo"}})
 
 	// route handler / endpoints
-	r.HandleFunc("/", home).Methods("GET")
-	r.HandleFunc("/api/books", getBooks).Methods("GET")
-	r.HandleFunc("/api/books/{id}", getBook).Methods("GET")
-	r.HandleFunc("/api/books", createBook).Methods("POST")
-	r.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
-	r.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
+	router.HandleFunc("/", home).Methods("GET")
+	router.HandleFunc("/api/books", getBooks).Methods("GET")
+	router.HandleFunc("/api/books/{id}", getBook).Methods("GET")
+	router.HandleFunc("/api/books", createBook).Methods("POST")
+	router.HandleFunc("/api/books/{id}", updateBook).Methods("PUT")
+	router.HandleFunc("/api/books/{id}", deleteBook).Methods("DELETE")
 
-	// run server
-	log.Fatal(http.ListenAndServe(":1234", r))
+	// run server basic
+	// log.Fatal(http.ListenAndServe(":1234", router))
+
+	// run server with config
+	srv := &http.Server{
+		Handler: router,
+		Addr:    "localhost:1234",
+		// Good practice: enforce timeouts for servers you create!
+		WriteTimeout: 15 * time.Second,
+		ReadTimeout:  15 * time.Second,
+	}
+	log.Fatal(srv.ListenAndServe())
 }
